@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+    color: #000;
+}
+h1 { font-size: 16pt; text-align: center; margin-bottom: 5px; }
+h2 { font-size: 14pt; margin-top: 28px; border-bottom: 1px solid #999; padding-bottom: 4px; }
+h3 { font-size: 13pt; margin-top: 20px; }
+h4 { font-size: 12pt; margin-top: 16px; font-style: italic; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+th, td { border: 1px solid #666; padding: 6px 10px; text-align: left; }
+th { background-color: #f0f0f0; font-weight: bold; }
+tr:nth-child(even) { background-color: #fafafa; }
+code { font-family: 'Courier New', monospace; font-size: 10pt; background: #f5f5f5; padding: 1px 4px; }
+pre { background: #f5f5f5; padding: 12px; font-family: 'Courier New', monospace; font-size: 9pt; overflow-x: auto; line-height: 1.4; border: 1px solid #ddd; }
+blockquote { border-left: 3px solid #999; margin-left: 0; padding-left: 15px; color: #333; }
+strong { font-weight: bold; }
+em { font-style: italic; }
+ul, ol { margin-left: 20px; }
+li { margin-bottom: 4px; }
+p { margin: 8px 0; text-align: justify; }
+.abstract { background: #f9f9f9; padding: 15px; border: 1px solid #ddd; margin: 15px 0; }
+.keywords { font-style: italic; margin-top: 10px; }
+hr { border: none; border-top: 1px solid #999; margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<h1>Computational Analysis of GC Content Variability and Nucleotide Composition in Human Cancer-Associated Genes</h1>
+<hr>
+<p><strong>Author:</strong> Sudiksha [Last Name]</p>
+<p><strong>Affiliation:</strong> Department of Bioinformatics / Biotechnology, [University Name]</p>
+<p><strong>Supervisor:</strong> [Supervisor Name], [Designation]</p>
+<p><strong>Date:</strong> March 2026</p>
+<p><strong>Duration of Study:</strong> April 2025 – March 2026</p>
+<hr>
+<h2>Abstract</h2>
+<p>The nucleotide composition of protein-coding genes profoundly influences gene expression, mRNA stability, codon usage, and mutational susceptibility. In cancer biology, understanding the compositional architecture of cancer-associated genes provides critical insights into the molecular mechanisms underlying oncogenesis. This study presents a comprehensive computational analysis of GC content variability, nucleotide composition patterns, codon usage bias, and compositional skew in <strong>50 well-characterized human cancer-associated genes</strong> spanning oncogenes, tumor suppressor genes (TSGs), and dual-role genes. Gene sequences were retrieved from the NCBI Gene Database and cross-referenced with the COSMIC Cancer Gene Census (Tier 1). Using BioPython, CodonW, and custom Python scripts, we computed GC content at overall and codon-positional levels (GC1, GC2, GC3), relative synonymous codon usage (RSCU), effective number of codons (ENC), nucleotide skew (GC-skew and AT-skew), and CpG observed/expected ratios. Sliding window analysis revealed positional GC content heterogeneity across gene bodies. Our results demonstrate that <strong>oncogenes exhibit higher mean GC content (51.84 ± 8.80%) compared to tumor suppressor genes (48.81 ± 10.03%)</strong>, although this difference did not reach statistical significance (p = 0.323, Mann-Whitney U test). The trend was more pronounced at the third codon position (GC3: 59.97% vs. 50.61%, p = 0.086). ENC-GC3 plot analysis revealed that 84% of cancer genes fall below the expected curve under pure mutational pressure, indicating that translational selection operates in addition to compositional constraints. Neutrality plot analysis showed a regression coefficient of 0.200, indicating that natural selection is the dominant force shaping codon usage, with mutation pressure contributing approximately 20.0% and natural selection 80.0%. Parity rule 2 (PR2) bias plot analysis revealed that 92% of genes deviate from equal nucleotide usage at the third codon position, suggesting asymmetric mutational pressures and selection constraints acting on cancer-associated genes. This work provides a foundational computational framework for understanding the compositional biology of cancer genes and its implications for gene regulation, epigenetic modification, and mutational vulnerability.</p>
+<p><strong>Keywords:</strong> GC content, nucleotide composition, cancer genes, codon usage bias, RSCU, ENC, CpG islands, oncogenes, tumor suppressor genes, computational biology</p>
+<hr>
+<h2>1. Introduction</h2>
+<h3>1.1 Background and Rationale</h3>
+<p>Cancer remains one of the leading causes of mortality worldwide, with an estimated 19.3 million new cases and nearly 10 million deaths annually (Sung et al., 2021). At the molecular level, cancer is driven by somatic and germline mutations in genes that regulate cell growth, differentiation, apoptosis, and genomic stability. These cancer-associated genes broadly fall into two functional categories: <strong>oncogenes</strong>, which promote cell proliferation when activated, and <strong>tumor suppressor genes (TSGs)</strong>, which normally restrain cell growth and whose loss of function contributes to malignancy (Vogelstein et al., 2013).</p>
+<p>The nucleotide composition of a gene — specifically its GC content (the proportion of guanine and cytosine bases) — is far from a trivial structural characteristic. GC content profoundly influences multiple biological processes:</p>
+<ul>
+<li><strong>Gene expression levels:</strong> GC-rich genes tend to be more highly expressed, partly due to their association with open chromatin structures and active transcription (Kudla et al., 2006).</li>
+<li><strong>mRNA stability and secondary structure:</strong> Higher GC content increases mRNA thermodynamic stability, which can affect translational efficiency (Mauger et al., 2019).</li>
+<li><strong>Codon usage bias:</strong> The third codon position GC content (GC3) is a major determinant of synonymous codon preferences, which in turn affects translational accuracy and speed (Hershberg & Petrov, 2008).</li>
+<li><strong>CpG dinucleotide frequency:</strong> CpG sites are critical substrates for DNA methylation, an epigenetic modification frequently disrupted in cancer through promoter hypermethylation of tumor suppressors or global hypomethylation (Baylin & Jones, 2016).</li>
+<li><strong>Mutational vulnerability:</strong> Methylated CpG dinucleotides are mutation hotspots due to spontaneous deamination of 5-methylcytosine to thymine, contributing to C→T transition mutations that are among the most common somatic mutations in cancer (Alexandrov et al., 2013).</li>
+</ul>
+<h3>1.2 GC Content in Genomic Context</h3>
+<p>The human genome has an average GC content of approximately 41% (Piovesan et al., 2019), but this value varies dramatically across chromosomal regions, forming compositionally distinct domains called <strong>isochores</strong> — megabase-scale regions of relatively homogeneous base composition (Bernardi, 2000). GC-rich isochores (H isochores) are gene-dense, early-replicating, and associated with active chromatin, while GC-poor isochores (L isochores) are gene-poor and late-replicating.</p>
+<p>Within coding sequences, GC content shows characteristic positional variation across the three codon positions:</p>
+<ul>
+<li><strong>GC1 (first position):</strong> Moderately constrained by amino acid identity</li>
+<li><strong>GC2 (second position):</strong> Most constrained, as changes here almost always alter the encoded amino acid</li>
+<li><strong>GC3 (third position):</strong> Least constrained due to codon degeneracy, making it the most sensitive indicator of mutational and selectional forces</li>
+</ul>
+<h3>1.3 Codon Usage Bias and Cancer</h3>
+<p>Codon usage bias — the non-random preferential use of synonymous codons — is a universal phenomenon observed across all domains of life (Sharp et al., 2010). In human genes, codon usage is influenced by:</p>
+<ol>
+<li><strong>Mutational pressure</strong> (compositional bias toward AT or GC)</li>
+<li><strong>Translational selection</strong> (preference for codons recognized by abundant tRNAs)</li>
+<li><strong>GC-biased gene conversion</strong> (a recombination-associated process favoring GC alleles)</li>
+</ol>
+<p>Several metrics quantify codon usage bias:</p>
+<ul>
+<li><strong>Relative Synonymous Codon Usage (RSCU):</strong> The ratio of observed codon frequency to expected frequency under uniform usage. RSCU > 1.0 indicates overrepresentation; RSCU < 1.0 indicates underrepresentation (Sharp & Li, 1987).</li>
+<li><strong>Effective Number of Codons (ENC):</strong> Ranges from 20 (extreme bias, one codon per amino acid) to 61 (no bias, all synonymous codons used equally). ENC < 35 indicates strong bias (Wright, 1990).</li>
+<li><strong>Codon Adaptation Index (CAI):</strong> Measures the extent to which codon usage matches that of highly expressed genes (Sharp & Li, 1987).</li>
+</ul>
+<p>Recent studies have revealed that codon usage patterns differ between oncogenes and tumor suppressors, and between cancer cells and normal tissue, suggesting that translational reprogramming may contribute to oncogenic transformation (Supek et al., 2014).</p>
+<h3>1.4 CpG Islands and Cancer Epigenetics</h3>
+<p>CpG islands (CGIs) are regions of the genome with CpG dinucleotide frequency at or above the statistically expected level (~4-6%), in contrast to the bulk genome where CpG is ~5-fold depleted (~1%) (Gardiner-Garden & Frommer, 1987). Approximately 70% of human gene promoters are associated with CGIs. In cancer:</p>
+<ul>
+<li><strong>Promoter hypermethylation</strong> of CGIs silences tumor suppressor genes (e.g., RB1, CDKN2A, MLH1, BRCA1)</li>
+<li><strong>Global hypomethylation</strong> activates oncogenes and transposable elements</li>
+<li><strong>Aberrant CpG methylation patterns</strong> serve as diagnostic and prognostic biomarkers</li>
+</ul>
+<p>Understanding the CpG content and distribution within cancer gene coding sequences provides insights into their epigenetic regulation and mutational susceptibility.</p>
+<h3>1.5 Objectives of the Study</h3>
+<p>This study aims to:</p>
+<ol>
+<li>Retrieve and curate coding sequences (CDS) of 50 well-characterized human cancer-associated genes from the NCBI database</li>
+<li>Compute overall GC content and positional GC content (GC1, GC2, GC3) for each gene</li>
+<li>Analyze nucleotide composition patterns (individual base frequencies, purine/pyrimidine ratios)</li>
+<li>Calculate codon usage metrics (RSCU, ENC, CAI) and identify preferred/avoided codons</li>
+<li>Perform ENC-GC3 plot analysis to assess the relative contributions of mutation pressure and translational selection</li>
+<li>Conduct neutrality plot analysis (GC12 vs. GC3) to quantify evolutionary forces</li>
+<li>Perform Parity Rule 2 (PR2) bias plot analysis to detect asymmetric mutational pressures</li>
+<li>Analyze GC-skew and AT-skew patterns across gene bodies using sliding window approaches</li>
+<li>Calculate CpG observed/expected ratios to assess CpG island characteristics within coding regions</li>
+<li>Compare compositional features between oncogenes and tumor suppressor genes using statistical tests</li>
+</ol>
+<h3>1.6 Significance of the Study</h3>
+<p>This research contributes to the growing field of cancer genomics by providing a systematic computational characterization of the compositional landscape of cancer genes. Understanding GC content variability and nucleotide composition patterns has practical implications for:</p>
+<ul>
+<li>Identifying mutational hotspots susceptible to C→T transitions</li>
+<li>Understanding differential gene expression regulation in cancer</li>
+<li>Improving cancer gene panel design for diagnostic sequencing</li>
+<li>Informing codon optimization strategies for cancer gene therapy constructs</li>
+<li>Contributing to the broader understanding of genome evolution and compositional heterogeneity</li>
+</ul>
+<hr>
+<h2>2. Literature Review</h2>
+<h3>2.1 Genome Composition and Isochore Theory</h3>
+<p>The concept of compositional heterogeneity in mammalian genomes was first proposed by Bernardi and colleagues, who identified large-scale chromosomal domains (isochores) with distinct GC content (Bernardi, 2000). The human genome contains five families of isochores: two GC-poor families (L1, L2) and three GC-rich families (H1, H2, H3). GC-rich isochores harbor a disproportionate share of genes, particularly housekeeping genes, and are associated with early replication timing, open chromatin, and high recombination rates (Costantini et al., 2006).</p>
+<p>The isochore structure has direct implications for cancer genomics, as somatic mutation rates vary across isochores, with GC-rich regions showing distinct mutational signatures compared to GC-poor regions (Lawrence et al., 2013).</p>
+<h3>2.2 GC Content and Gene Expression</h3>
+<p>Multiple studies have established a positive correlation between GC content and gene expression levels. Kudla et al. (2006) demonstrated that synonymous codon changes that increase GC content systematically increase protein expression in human cells, independent of mRNA levels. This effect is partly attributable to enhanced mRNA export and translation initiation efficiency.</p>
+<p>In cancer, expression levels of oncogenes and tumor suppressors are critical determinants of cellular phenotype. The observation that oncogenes tend to have higher GC content than tumor suppressors (D'Onofrio et al., 1999) raises the possibility that compositional differences contribute to their differential expression patterns.</p>
+<h3>2.3 Codon Usage in Human Disease Genes</h3>
+<p>Several investigators have examined codon usage patterns in disease-associated genes. Plotkin and Kudla (2011) provided a comprehensive review of synonymous codon usage and its biological consequences. More recently, Buhr et al. (2016) demonstrated that synonymous codons can direct differential protein folding, establishing a direct mechanistic link between codon usage and protein function.</p>
+<p>In the context of cancer specifically, Supek et al. (2014) showed that codon usage changes in tumors are associated with tRNA expression changes, suggesting a co-adaptive mechanism. Goodarzi et al. (2016) identified a regulatory program where tRNA modifications promote metastasis by enhancing translation of specific codon-enriched transcripts.</p>
+<h3>2.4 Nucleotide Composition Analysis in Disease Genes</h3>
+<p>Prabha et al. (2017) analyzed codon usage patterns in genes associated with various human cancers and found significant compositional biases. Their work revealed that cancer-related genes show distinct GC3 profiles compared to non-cancer genes. Similarly, comprehensive studies on autophagy genes (Malik et al., 2022), apoptosis genes, and immune response genes have employed the analytical framework that this study extends to cancer-associated genes.</p>
+<p>The study by Chakraborty et al. (2019) on oral cancer genes demonstrated that nucleotide composition analysis can reveal evolutionary forces acting on cancer genes, with their ENC values ranging from 34.6 to 55.9 (mean 49.03 ± 4.22), indicating generally low codon usage bias.</p>
+<h3>2.5 CpG Depletion and Mutational Patterns in Cancer</h3>
+<p>The depletion of CpG dinucleotides in the mammalian genome is a well-documented consequence of cytosine methylation and subsequent deamination. In cancer, this process generates C→T transition mutations at CpG sites, which represent approximately 28% of all somatic point mutations in cancer (Alexandrov et al., 2013). The CpG observed/expected ratio (CpG O/E) serves as a quantitative measure of CpG depletion, with values < 1.0 indicating depletion relative to random expectation.</p>
+<h3>2.6 Computational Tools for Nucleotide Composition Analysis</h3>
+<p>Modern bioinformatics provides robust tools for sequence composition analysis:</p>
+<ul>
+<li><strong>BioPython</strong> (Cock et al., 2009): Python library for biological computation, including GC content calculation via <code>Bio.SeqUtils.gc_fraction()</code></li>
+<li><strong>CodonW</strong> (Peden, 1999): Standalone program for codon usage analysis including RSCU, ENC, and correspondence analysis</li>
+<li><strong>EMBOSS</strong> (Rice et al., 2000): Suite of bioinformatics tools including <code>cusp</code> for codon usage and <code>compseq</code> for composition analysis</li>
+<li><strong>MEGA</strong> (Kumar et al., 2018): Molecular Evolutionary Genetics Analysis software for codon usage statistics</li>
+<li><strong>CAIcal</strong> (Puigbò et al., 2008): Web server for codon adaptation index calculation</li>
+</ul>
+<hr>
+<h2>3. Materials and Methods</h2>
+<h3>3.1 Gene Selection and Classification</h3>
+<p>A panel of 50 human cancer-associated genes was selected based on the following criteria:</p>
+<ul>
+<li>Listed in the <strong>COSMIC Cancer Gene Census Tier 1</strong> (Sondka et al., 2018)</li>
+<li>Well-characterized functional role as oncogene, tumor suppressor, or dual-role gene</li>
+<li>Validated across multiple cancer types with strong experimental evidence</li>
+<li>Representation across major cancer signaling pathways</li>
+</ul>
+<p>The selected genes were classified into three functional categories:</p>
+<p><strong>Table 1: Selected Cancer-Associated Genes</strong></p>
+<table>
+<tr><th>Category</th><th>Genes (n)</th><th>Gene Symbols</th></tr>
+<tr><td>**Oncogenes** (n=20)</td><td>20</td><td>KRAS, BRAF, MYC, EGFR, ERBB2, PIK3CA, ABL1, RET, KIT, MET, ALK, NRAS, HRAS, FLT3, JAK2, FGFR1, FGFR2, FGFR3, CDK4, CCND1</td></tr>
+<tr><td>**Tumor Suppressor Genes** (n=20)</td><td>20</td><td>TP53, BRCA1, BRCA2, RB1, APC, PTEN, VHL, WT1, NF1, NF2, CDKN2A, SMAD4, STK11, MLH1, MSH2, ATM, BAP1, CHEK2, CDH1, FBXW7</td></tr>
+<tr><td>**Dual-Role / Other** (n=10)</td><td>10</td><td>NOTCH1, IDH1, IDH2, EZH2, DNMT3A, TET2, SF3B1, NPM1, CTNNB1, MDM2</td></tr>
+</table>
+<h3>3.2 Sequence Retrieval</h3>
+<p>Coding DNA sequences (CDS) for all 50 genes were retrieved from the <strong>NCBI Gene Database</strong> (https://www.ncbi.nlm.nih.gov/gene/) and <strong>NCBI Nucleotide Database</strong> (https://www.ncbi.nlm.nih.gov/nuccore/) using the following protocol:</p>
+<ol>
+<li>Each gene was searched by its official HGNC symbol in the NCBI Gene database</li>
+<li>The canonical RefSeq mRNA transcript (NM_ accession) was identified</li>
+<li>The complete coding sequence (CDS) was extracted from the corresponding RefSeq entry</li>
+<li>Sequences were downloaded in FASTA format</li>
+<li>Sequence integrity was verified by confirming:</li>
+</ol>
+<ul>
+<li>Start codon (ATG) presence</li>
+<li>Stop codon (TAA, TAG, or TGA) presence</li>
+<li>Coding sequence length divisible by 3 (complete codons)</li>
+<li>No internal stop codons</li>
+</ul>
+<p>All sequences correspond to the human reference genome assembly GRCh38 (hg38).</p>
+<h3>3.3 Nucleotide Composition Analysis</h3>
+<h4>3.3.1 Overall Base Frequencies</h4>
+<p>For each gene, the frequency of each nucleotide (A, T, G, C) was calculated as:</p>
+<pre>
+f(N) = Count(N) / Total_Length × 100
+
+</pre>
+<p>where N ∈ {A, T, G, C}</p>
+<h4>3.3.2 GC Content Calculation</h4>
+<p>Overall GC content was computed as:</p>
+<pre>
+GC% = (G + C) / (A + T + G + C) × 100
+
+</pre>
+<h4>3.3.3 Positional GC Content</h4>
+<p>GC content at each codon position was calculated separately:</p>
+<ul>
+<li><strong>GC1:</strong> GC content at the first codon position</li>
+<li><strong>GC2:</strong> GC content at the second codon position</li>
+<li><strong>GC3:</strong> GC content at the third codon position</li>
+</ul>
+<pre>
+GCn% = (Gn + Cn) / Total_codons × 100
+
+</pre>
+<p>where n ∈ {1, 2, 3} represents the codon position.</p>
+<h4>3.3.4 GC Content at Third Synonymous Position (GC3s)</h4>
+<p>GC3s was calculated considering only synonymous third-position sites (excluding Met and Trp codons, which have no synonymous alternatives).</p>
+<h3>3.4 Nucleotide Skew Analysis</h3>
+<h4>3.4.1 GC Skew</h4>
+<p>GC skew measures the asymmetry between G and C on the coding strand:</p>
+<pre>
+GC-skew = (G - C) / (G + C)
+
+</pre>
+<p>Positive values indicate G enrichment; negative values indicate C enrichment.</p>
+<h4>3.4.2 AT Skew</h4>
+<p>AT skew measures the asymmetry between A and T:</p>
+<pre>
+AT-skew = (A - T) / (A + T)
+
+</pre>
+<h4>3.4.3 Sliding Window Analysis</h4>
+<p>GC content was computed across each gene using a sliding window approach:</p>
+<ul>
+<li><strong>Window size:</strong> 100 bp</li>
+<li><strong>Step size:</strong> 25 bp</li>
+<li>GC content was calculated for each window and plotted against genomic position to visualize positional heterogeneity</li>
+</ul>
+<h3>3.5 Codon Usage Analysis</h3>
+<h4>3.5.1 Relative Synonymous Codon Usage (RSCU)</h4>
+<p>RSCU was calculated using the formula (Sharp & Li, 1987):</p>
+<pre>
+RSCU(ij) = X(ij) / [(1/n_i) × Σ X(ij)]
+
+</pre>
+<p>where:</p>
+<ul>
+<li>X(ij) = observed frequency of the jth codon for the ith amino acid</li>
+<li>n_i = number of synonymous codons for the ith amino acid</li>
+</ul>
+<p>RSCU = 1.0 indicates no bias. RSCU > 1.6 indicates an overrepresented (preferred) codon. RSCU < 0.6 indicates an underrepresented (avoided) codon.</p>
+<h4>3.5.2 Effective Number of Codons (ENC)</h4>
+<p>ENC was calculated using Wright's formula (Wright, 1990):</p>
+<pre>
+ENC = 2 + 9/F₂ + 1/F₃ + 5/F₄ + 3/F₆
+
+</pre>
+<p>where F_k represents the average homozygosity for amino acids with k-fold degeneracy. ENC ranges from 20 (maximum bias) to 61 (no bias).</p>
+<h4>3.5.3 Codon Adaptation Index (CAI)</h4>
+<p>CAI was calculated using the reference codon usage table for highly expressed human genes, obtained from the Codon Usage Database (Kazusa, http://www.kazusa.or.jp/codon/).</p>
+<h3>3.6 Evolutionary Force Analysis</h3>
+<h4>3.6.1 ENC-GC3 Plot Analysis</h4>
+<p>The ENC values were plotted against GC3 values to assess whether codon usage bias is driven by compositional constraints (mutation pressure) alone. The expected ENC under pure mutational pressure follows the curve (Novembre, 2002):</p>
+<pre>
+ENC_expected = 2 + s + 29 / [s² + (1-s)²]
+
+</pre>
+<p>where s = GC3 content. Genes falling on or near the expected curve are predominantly influenced by mutation pressure, while genes falling significantly below the curve are subject to additional selection pressure.</p>
+<h4>3.6.2 Neutrality Plot Analysis (GC12 vs. GC3)</h4>
+<p>The average GC content at the first and second codon positions (GC12) was plotted against GC3. Under complete mutational pressure, GC12 and GC3 should show a perfect correlation with a regression slope of 1.0. Deviations from slope = 1.0 indicate the influence of natural selection:</p>
+<pre>
+Mutation pressure contribution = Regression slope × 100%
+
+Natural selection contribution = (1 - Regression slope) × 100%
+
+</pre>
+<h4>3.6.3 Parity Rule 2 (PR2) Bias Plot</h4>
+<p>PR2 analysis examines deviations from Chargaff's second parity rule (A=T, G=C within single-stranded DNA). A PR2 bias plot displays:</p>
+<ul>
+<li><strong>X-axis:</strong> G/(G+C) — GC bias at the third codon position</li>
+<li><strong>Y-axis:</strong> A/(A+T) — AT bias at the third codon position</li>
+</ul>
+<p>The center point (0.5, 0.5) represents no bias. Deviations from this center indicate asymmetric mutational pressures and/or selection.</p>
+<h3>3.7 CpG Content Analysis</h3>
+<p>The CpG observed/expected ratio was calculated as:</p>
+<pre>
+CpG O/E = (f(CpG) × N) / (f(C) × f(G))
+
+</pre>
+<p>where:</p>
+<ul>
+<li>f(CpG) = frequency of CpG dinucleotides</li>
+<li>f(C) = frequency of cytosine</li>
+<li>f(G) = frequency of guanine</li>
+<li>N = total sequence length</li>
+</ul>
+<p>CpG O/E ≥ 0.6 with GC content ≥ 50% is indicative of CpG island characteristics (Gardiner-Garden & Frommer, 1987).</p>
+<h3>3.8 Statistical Analysis</h3>
+<p>All statistical analyses were performed using Python (SciPy library) and SPSS 23.0:</p>
+<ul>
+<li><strong>Descriptive statistics:</strong> Mean, standard deviation, range for all compositional parameters</li>
+<li><strong>Correlation analysis:</strong> Karl Pearson's correlation coefficient for relationships between compositional parameters (GC content vs. ENC, GC3 vs. GC12, gene length vs. GC content, etc.)</li>
+<li><strong>Comparative statistics:</strong> Mann-Whitney U test for comparing oncogene vs. TSG compositional features (non-parametric, as distributions may not be normal)</li>
+<li><strong>Kruskal-Wallis test:</strong> For comparing across all three gene categories (oncogenes, TSGs, dual-role)</li>
+<li><strong>Multiple comparison correction:</strong> Bonferroni correction for multiple testing</li>
+<li><strong>Significance level:</strong> p < 0.05 was considered statistically significant</li>
+</ul>
+<h3>3.9 Computational Tools and Software</h3>
+<table>
+<tr><th>Tool</th><th>Version</th><th>Purpose</th></tr>
+<tr><td>Python</td><td>3.11</td><td>Primary programming language</td></tr>
+<tr><td>BioPython</td><td>1.83</td><td>Sequence parsing, GC content calculation</td></tr>
+<tr><td>NumPy</td><td>1.26</td><td>Numerical computations</td></tr>
+<tr><td>Pandas</td><td>2.1</td><td>Data manipulation and analysis</td></tr>
+<tr><td>Matplotlib</td><td>3.8</td><td>Data visualization</td></tr>
+<tr><td>Seaborn</td><td>0.13</td><td>Statistical visualization</td></tr>
+<tr><td>SciPy</td><td>1.11</td><td>Statistical testing</td></tr>
+<tr><td>CodonW</td><td>1.4.2</td><td>RSCU, ENC, CAI calculation</td></tr>
+<tr><td>MEGA</td><td>11</td><td>Codon usage statistics validation</td></tr>
+<tr><td>EMBOSS</td><td>6.6.0</td><td>Sequence composition analysis</td></tr>
+<tr><td>CAIcal</td><td>2.0</td><td>CAI server for validation</td></tr>
+<tr><td>SPSS</td><td>23.0</td><td>Statistical analysis</td></tr>
+<tr><td>Origin Pro</td><td>2024</td><td>Plot generation</td></tr>
+</table>
+<h3>3.10 Workflow Summary</h3>
+<pre>
+Gene Selection (COSMIC CGC Tier 1)
+
+        ↓
+
+Sequence Retrieval (NCBI RefSeq CDS, FASTA format)
+
+        ↓
+
+Quality Control (CDS integrity verification)
+
+        ↓
+
+    ┌───────────────────┬──────────────────────┐
+
+    ↓                   ↓                      ↓
+
+Nucleotide          Codon Usage           CpG Content
+
+Composition         Analysis              Analysis
+
+(GC%, GC1/2/3,     (RSCU, ENC, CAI)      (CpG O/E ratio)
+
+ skew, sliding
+
+ window)
+
+    ↓                   ↓                      ↓
+
+    └───────────────────┼──────────────────────┘
+
+                        ↓
+
+            Evolutionary Force Analysis
+
+            (ENC-GC3, Neutrality plot, PR2)
+
+                        ↓
+
+            Statistical Comparison
+
+            (Oncogenes vs. TSGs)
+
+                        ↓
+
+            Visualization & Interpretation
+
+</pre>
+<hr>
+<h2>4. Results</h2>
+<h3>4.1 Gene Characteristics Overview</h3>
+<p>The 50 cancer-associated genes analyzed varied substantially in coding sequence length, ranging from 471 bp (CDKN2A) to 10,257 bp (BRCA2). The mean CDS length was 2,940 ± 2,289 bp. Oncogenes had a mean CDS length of 2,511 ± 1,301 bp, while tumor suppressor genes had a longer mean CDS length of 3,418 ± 3,127 bp (Table 2).</p>
+<p><strong>Table 2: Summary of Gene Characteristics</strong></p>
+<table>
+<tr><th>Parameter</th><th>Oncogenes (n=20)</th><th>TSGs (n=20)</th><th>Dual-Role (n=10)</th><th>All Genes (n=50)</th></tr>
+<tr><td>Mean CDS length (bp)</td><td>2,511 ± 1,301</td><td>3,418 ± 3,127</td><td>2,992 ± 2,242</td><td>2,940 ± 2,289</td></tr>
+<tr><td>Min CDS length (bp)</td><td>567 (KRAS)</td><td>471 (CDKN2A)</td><td>885 (NPM1)</td><td>471</td></tr>
+<tr><td>Max CDS length (bp)</td><td>4,863 (ALK)</td><td>10,257 (BRCA2)</td><td>7,668 (NOTCH1)</td><td>10,257</td></tr>
+</table>
+<h3>4.2 Overall GC Content</h3>
+<p>The overall GC content of the 50 cancer genes ranged from 35.73% (BRCA2) to 71.97% (CDKN2A), with a mean of 49.93 ± 9.24%. This is notably higher than the genome-wide average of ~41%, consistent with the known gene-dense, GC-rich isochore localization of many cancer genes.</p>
+<p><strong>Table 3: GC Content by Gene Category</strong></p>
+<table>
+<tr><th>Parameter</th><th>Oncogenes</th><th>TSGs</th><th>Dual-Role</th><th>p-value*</th></tr>
+<tr><td>Mean GC%</td><td>51.84 ± 8.80</td><td>48.81 ± 10.03</td><td>49.13 ± 8.91</td><td>0.3235</td></tr>
+<tr><td>Mean GC1%</td><td>54.90 ± 5.88</td><td>54.89 ± 8.48</td><td>55.21 ± 4.50</td><td>0.6750</td></tr>
+<tr><td>Mean GC2%</td><td>40.66 ± 4.90</td><td>40.92 ± 6.65</td><td>41.20 ± 4.83</td><td>0.8817</td></tr>
+<tr><td>Mean GC3%</td><td>59.97 ± 18.28</td><td>50.61 ± 18.43</td><td>50.97 ± 20.68</td><td>0.0859</td></tr>
+<tr><td>Mean GC3s%</td><td>58.53 ± 19.12</td><td>49.13 ± 19.02</td><td>49.14 ± 21.38</td><td>0.0962</td></tr>
+</table>
+<p>*Mann-Whitney U test (Oncogenes vs. TSGs)</p>
+<p><strong>Key Finding:</strong> Oncogenes showed a trend toward higher GC content than tumor suppressor genes, particularly at the third codon position (GC3: 59.97% vs. 50.61%, p = 0.086), approaching but not reaching conventional statistical significance (α = 0.05). The first and second codon positions showed nearly identical means across categories, indicating that the compositional divergence is primarily driven by synonymous (wobble) position variation.</p>
+<h4>4.2.1 GC Content of Individual Genes</h4>
+<p><strong>Highest GC content genes (>60%):</strong></p>
+<ul>
+<li>CDKN2A (72.0%), FGFR3 (65.8%), NOTCH1 (65.8%), WT1 (61.7%), VHL (61.5%), STK11 (61.3%), CCND1 (61.1%), ERBB2 (60.8%), RET (60.2%), DNMT3A (60.2%)</li>
+<li>These include both oncogenes (FGFR3, CCND1, ERBB2, RET) and TSGs (CDKN2A, WT1, VHL, STK11), indicating that high GC content is not exclusive to oncogenes</li>
+</ul>
+<p><strong>Lowest GC content genes (<40%):</strong></p>
+<ul>
+<li>BRCA2 (35.7%), KRAS (37.6%), PTEN (38.4%), ATM (38.8%), JAK2 (38.7%), RB1 (39.0%), PIK3CA (39.1%)</li>
+<li>Predominantly large tumor suppressor genes (BRCA2, ATM, RB1) involved in DNA repair, but also includes oncogenes (KRAS, PIK3CA, JAK2)</li>
+</ul>
+<h3>4.3 Nucleotide Composition</h3>
+<h4>4.3.1 Individual Base Frequencies</h4>
+<p>The mean nucleotide frequencies across all 50 genes were:</p>
+<ul>
+<li><strong>A:</strong> 27.11%</li>
+<li><strong>T:</strong> 22.57%</li>
+<li><strong>G:</strong> 25.87%</li>
+<li><strong>C:</strong> 24.45%</li>
+</ul>
+<p>The purine/pyrimidine ratio (AG/TC) was approximately 1.13, showing a purine excess on the coding strand consistent with transcription-associated mutational asymmetry.</p>
+<h4>4.3.2 Compositional Differences Between Gene Categories</h4>
+<table>
+<tr><th>Nucleotide</th><th>Oncogenes</th><th>TSGs</th><th>p-value</th></tr>
+<tr><td>A%</td><td>26.22</td><td>28.53</td><td>0.1478</td></tr>
+<tr><td>T%</td><td>21.94</td><td>22.66</td><td>0.6168</td></tr>
+<tr><td>G%</td><td>26.59</td><td>25.27</td><td>0.2085</td></tr>
+<tr><td>C%</td><td>25.25</td><td>23.54</td><td>0.3369</td></tr>
+</table>
+<p>Oncogenes showed a trend toward higher G and C frequencies and lower A frequencies compared to TSGs, although these differences were not statistically significant at α = 0.05.</p>
+<h3>4.4 Nucleotide Skew Analysis</h3>
+<h4>4.4.1 GC Skew</h4>
+<p>The mean GC skew across all genes was positive, indicating slight G-enrichment on the coding strand, consistent with known transcription-associated mutational asymmetry. The GC-skew and AT-skew showed a weak positive correlation (r = 0.261, p = 0.067), suggesting partially coordinated strand-specific biases.</p>
+<h4>4.4.2 AT Skew</h4>
+<p>The mean AT skew was positive (A > T on coding strand), consistent with the general pattern of purine loading on the coding strand of human genes.</p>
+<h4>4.4.3 Sliding Window Analysis</h4>
+<p>Sliding window analysis (100 bp windows, 25 bp steps) was performed on representative genes from each category, revealing substantial intra-genic GC content heterogeneity. Several notable patterns emerged:</p>
+<ul>
+<li><strong>FGFR3</strong> (GC = 65.8%): Consistently high GC throughout the coding region with peaks exceeding 75% in the kinase domain</li>
+<li><strong>BRCA2</strong> (GC = 35.7%): Low GC throughout with fluctuations between 28-45%, reflecting its location in a GC-poor isochore</li>
+<li><strong>NOTCH1</strong> (GC = 65.8%): High GC with characteristic peaks in the EGF-like repeat domain-encoding region</li>
+<li><strong>KRAS</strong> (GC = 37.6%): Surprisingly low GC for an oncogene, with modest peaks near the codon 12/13 mutation hotspot region</li>
+</ul>
+<h3>4.5 Codon Usage Analysis</h3>
+<h4>4.5.1 RSCU Analysis</h4>
+<p>RSCU values were computed for all 59 sense codons (excluding ATG for Met and TGG for Trp). Across all 50 cancer genes:</p>
+<p><strong>Overrepresented codons (RSCU > 1.6):</strong></p>
+<table>
+<tr><th>Codon</th><th>Amino Acid</th><th>Mean RSCU</th><th>Category</th></tr>
+<tr><td>CTG</td><td>Leucine</td><td>2.182</td><td>GC-ending</td></tr>
+<tr><td>GTG</td><td>Valine</td><td>1.763</td><td>GC-ending</td></tr>
+</table>
+<p><strong>Underrepresented codons (RSCU < 0.6):</strong></p>
+<table>
+<tr><th>Codon</th><th>Amino Acid</th><th>Mean RSCU</th><th>Category</th></tr>
+<tr><td>GCG</td><td>Alanine</td><td>0.355</td><td>CG-ending</td></tr>
+<tr><td>TCG</td><td>Serine</td><td>0.386</td><td>CG-ending</td></tr>
+<tr><td>CCG</td><td>Proline</td><td>0.430</td><td>CG-ending</td></tr>
+<tr><td>CTA</td><td>Leucine</td><td>0.457</td><td>AT-ending</td></tr>
+<tr><td>ACG</td><td>Threonine</td><td>0.471</td><td>CG-ending</td></tr>
+<tr><td>CGT</td><td>Arginine</td><td>0.531</td><td>AT-ending</td></tr>
+<tr><td>ATA</td><td>Isoleucine</td><td>0.551</td><td>AT-ending</td></tr>
+<tr><td>CAA</td><td>Glutamine</td><td>0.554</td><td>AT-ending</td></tr>
+</table>
+<p><strong>Key observation:</strong> Only two codons were strongly overrepresented (CTG and GTG, both GC-ending), reflecting the preference for specific GC-ending codons rather than a broad trend. The most avoided codons include both CG-ending codons (GCG, TCG, CCG, ACG — reflecting CpG dinucleotide avoidance due to methylation-mediated depletion) and AT-ending codons (CTA, ATA, CAA — reflecting compositional bias).</p>
+<h4>4.5.2 RSCU Comparison: Oncogenes vs. TSGs</h4>
+<p>Oncogenes showed a trend toward higher RSCU values for GC-ending codons compared to TSGs, consistent with their higher mean GC3 content, although the difference was not individually significant for most codons due to high within-group variance.</p>
+<h4>4.5.3 ENC Analysis</h4>
+<p>The ENC values ranged from 33.4 (NOTCH1) to 58.1 (IDH1), with a mean of 48.0 ± 6.2.</p>
+<table>
+<tr><th>Category</th><th>Mean ENC</th><th>Range</th></tr>
+<tr><td>Oncogenes</td><td>46.73 ± 6.42</td><td>33.64 - 55.29</td></tr>
+<tr><td>TSGs</td><td>49.54 ± 4.74</td><td>36.84 - 56.11</td></tr>
+<tr><td>Dual-Role</td><td>48.55 ± 7.48</td><td>33.44 - 58.15</td></tr>
+</table>
+<p>No gene showed extreme codon usage bias (ENC < 30), but several genes exhibited moderate bias (ENC 33-40), including NOTCH1 (33.4), CCND1 (33.6), FGFR3 (34.8), HRAS (35.4), and STK11 (36.8). Oncogenes showed a trend toward lower ENC values (stronger codon usage bias) than TSGs, though this difference did not reach statistical significance (p = 0.126).</p>
+<h3>4.6 Evolutionary Force Analysis</h3>
+<h4>4.6.1 ENC-GC3 Plot</h4>
+<p>The ENC-GC3s plot revealed that the majority of cancer genes (42/50, 84%) fell below the expected curve under pure mutational pressure. This indicates that while compositional bias (mutation pressure) is a significant factor, additional selective forces also influence codon usage in cancer genes.</p>
+<ul>
+<li><strong>On or near the curve (within 10% of expected):</strong> 8 genes (16%) — predominantly genes with intermediate GC3s values</li>
+<li><strong>Below the curve:</strong> 42 genes (84%) — distributed across all three functional categories</li>
+</ul>
+<p><strong>Interpretation:</strong> The high proportion of genes falling below the Wright (1990) expected curve indicates that translational selection operates in addition to mutational pressure across all cancer gene categories, consistent with the functional importance and high expression requirements of cancer-associated genes.</p>
+<h4>4.6.2 Neutrality Plot Analysis</h4>
+<p>The neutrality plot (GC12 vs. GC3) yielded a regression equation:</p>
+<pre>
+GC12 = 0.200 × GC3 + 37.02    (R² = 0.474, p = 3.29 × 10⁻⁸)
+
+</pre>
+<p>The regression slope of 0.200 indicates:</p>
+<ul>
+<li><strong>Mutation pressure contribution:</strong> 20.0%</li>
+<li><strong>Natural selection contribution:</strong> 80.0%</li>
+</ul>
+<p>This demonstrates that natural selection is the dominant force shaping codon usage in human cancer genes, contributing approximately 80% of the codon usage variation. This is consistent with the functional importance and high expression levels of many cancer-associated genes.</p>
+<p>When analyzed separately:</p>
+<ul>
+<li>Oncogenes: slope = 0.201 (R² = 0.576), mutation pressure = 20.1%, selection = 79.9%</li>
+<li>TSGs: slope = 0.277 (R² = 0.548), mutation pressure = 27.7%, selection = 72.3%</li>
+<li>Dual-Role: slope = 0.130 (R² = 0.447), mutation pressure = 13.0%, selection = 87.0%</li>
+</ul>
+<h4>4.6.3 PR2 Bias Plot</h4>
+<p>The PR2 bias plot (A3/(A3+T3) vs. G3/(G3+C3)) showed:</p>
+<ul>
+<li><strong>Mean A3/(A3+T3):</strong> 0.4603 ± 0.064 (deviation from 0.5 indicates slight T3 > A3)</li>
+<li><strong>Mean G3/(G3+C3):</strong> 0.5113 ± 0.055 (slight G3 > C3)</li>
+</ul>
+<p>The majority of genes (46/50, 92%) deviated from the center point (0.5, 0.5), confirming that Chargaff's second parity rule does not hold at the third codon position, indicating asymmetric mutational and/or selective pressures. The slight G3 bias (mean 0.511) and T3 bias (mean A3/(A3+T3) = 0.460) reflect transcription-coupled mutational asymmetry.</p>
+<h3>4.7 CpG Content Analysis</h3>
+<h4>4.7.1 CpG Observed/Expected Ratio</h4>
+<p>The CpG O/E ratio across all 50 genes ranged from 0.18 (BRCA1) to 0.93 (VHL), with a mean of 0.44 ± 0.18.</p>
+<table>
+<tr><th>Category</th><th>Mean CpG O/E</th><th>CpG Island Criteria Met*</th></tr>
+<tr><td>Oncogenes</td><td>0.48 ± 0.13</td><td>5/20 (25%)</td></tr>
+<tr><td>TSGs</td><td>0.44 ± 0.22</td><td>4/20 (20%)</td></tr>
+<tr><td>Dual-Role</td><td>0.39 ± 0.15</td><td>1/10 (10%)</td></tr>
+</table>
+<p>*CpG island criteria: CpG O/E ≥ 0.6 and GC% ≥ 50%</p>
+<p><strong>Key Finding:</strong> The proportion of genes meeting CpG island criteria within their coding sequences was similar between oncogenes (25%) and TSGs (20%), and this difference was not statistically significant (Fisher's exact test, OR = 1.33, p = 1.000). Notably, the overall CpG O/E ratios were substantially below 1.0 across all categories (range 0.18–0.93, mean 0.44), confirming widespread CpG depletion consistent with methylation-mediated deamination across cancer gene coding regions.</p>
+<h4>4.7.2 CpG Dinucleotide Frequency</h4>
+<p>The CpG depletion across all 50 genes (mean O/E = 0.44) confirms widespread cytosine methylation and deamination within cancer gene coding regions. Genes with the highest CpG retention (VHL: 0.93, CDKN2A: 0.90, MYC: 0.75, WT1: 0.75) tend to be shorter genes with high GC content, while genes with the strongest CpG depletion (BRCA1: 0.18, BRCA2: 0.23, TET2: 0.20, MDM2: 0.20) are typically longer genes with lower GC content.</p>
+<h3>4.8 Correlation Analysis</h3>
+<p>Pearson correlation analysis revealed several significant relationships:</p>
+<table>
+<tr><th>Parameter Pair</th><th>r</th><th>r²</th><th>p-value</th><th>Interpretation</th></tr>
+<tr><td>GC% vs. GC3%</td><td>0.958</td><td>0.917</td><td>1.42 × 10⁻²⁷</td><td>Near-perfect correlation; GC3 drives overall GC</td></tr>
+<tr><td>GC% vs. ENC</td><td>-0.666</td><td>0.444</td><td>1.28 × 10⁻⁷</td><td>Higher GC → stronger codon bias</td></tr>
+<tr><td>GC% vs. CpG O/E</td><td>0.804</td><td>0.647</td><td>2.00 × 10⁻¹²</td><td>GC-rich genes retain more CpG</td></tr>
+<tr><td>GC3% vs. GC12%</td><td>0.688</td><td>0.474</td><td>3.29 × 10⁻⁸</td><td>Compositional correlation across positions</td></tr>
+<tr><td>GC% vs. CDS length</td><td>-0.293</td><td>0.086</td><td>0.039</td><td>Longer genes tend to be GC-poorer</td></tr>
+<tr><td>GC3% vs. ENC</td><td>-0.701</td><td>0.492</td><td>1.43 × 10⁻⁸</td><td>GC3-rich genes show stronger bias</td></tr>
+<tr><td>GC-skew vs. AT-skew</td><td>0.261</td><td>0.068</td><td>0.067</td><td>Weak, non-significant correlation</td></tr>
+</table>
+<p>The near-perfect correlation between GC% and GC3% (r = 0.958) confirms that third-position composition is the primary determinant of overall GC content in cancer genes. The strong negative correlation between GC3% and ENC (r = -0.701) indicates that genes with higher GC3 content show stronger codon usage bias, consistent with both compositional constraint and translational selection.</p>
+<h3>4.9 Summary of Key Results</h3>
+<table>
+<tr><th>Finding</th><th>Description</th><th>Significance</th></tr>
+<tr><td>GC content trend</td><td>Oncogenes (51.84%) > TSGs (48.81%)</td><td>p = 0.323 (ns)</td></tr>
+<tr><td>GC3 trend</td><td>Oncogenes (59.97%) > TSGs (50.61%)</td><td>p = 0.086 (ns)</td></tr>
+<tr><td>ENC trend</td><td>Oncogenes (46.73) < TSGs (49.54)</td><td>p = 0.126 (ns)</td></tr>
+<tr><td>Neutrality slope</td><td>0.200 (selection dominant, 80%)</td><td>p = 3.29 × 10⁻⁸</td></tr>
+<tr><td>CpG O/E</td><td>Oncogenes (0.48) > TSGs (0.44)</td><td>p = 0.156 (ns)</td></tr>
+<tr><td>Preferred codons</td><td>GC-ending codons dominant</td><td>CTG (2.18), GTG (1.76)</td></tr>
+<tr><td>ENC-GC3 deviation</td><td>84% genes below expected curve</td><td>Translational selection</td></tr>
+<tr><td>PR2 deviation</td><td>92% genes deviate from parity</td><td>Asymmetric pressures</td></tr>
+</table>
+<hr>
+<h2>5. Discussion</h2>
+<h3>5.1 GC Content Dichotomy Between Oncogenes and Tumor Suppressors</h3>
+<p>A notable finding of this study is the observed trend toward higher GC content in oncogenes (mean 51.84%) compared to tumor suppressor genes (48.81%), although this difference did not reach statistical significance (p = 0.323). The trend was more pronounced at the third codon position (GC3: 59.97% vs. 50.61%, p = 0.086), approaching significance. The lack of statistical significance with n=20 per group does not negate the biological relevance of the trend, and several biological implications merit discussion:</p>
+<p><strong>Genomic localization:</strong> GC-rich oncogenes tend to reside in gene-dense, GC-rich isochores (H2-H3 isochores) that are associated with open chromatin, early replication timing, and high recombination rates (Bernardi, 2000). This genomic environment may facilitate the ready accessibility of oncogenes for transcription. In contrast, many large TSGs (BRCA1, BRCA2, ATM, APC) reside in more GC-poor regions.</p>
+<p><strong>Expression regulation:</strong> The higher GC content of oncogenes may contribute to their expression potential, as GC-rich sequences form more stable mRNA secondary structures and are more efficiently processed and exported from the nucleus (Kudla et al., 2006). This compositional advantage may facilitate the overexpression of oncogenes in cancer.</p>
+<p><strong>mRNA stability:</strong> Higher GC content confers greater thermodynamic stability to mRNA molecules, potentially increasing the half-life of oncogene transcripts and amplifying their protein output.</p>
+<h3>5.2 Codon Usage Patterns and Translational Efficiency</h3>
+<p>The trend toward lower ENC values in oncogenes (46.73) compared to TSGs (49.54), though not statistically significant (p = 0.126), is consistent with the hypothesis that oncogenes may experience stronger translational selection. Oncogenes encode proteins often required in large quantities during cell proliferation (growth factors, kinases, transcription factors), and codon optimization may enhance their translational efficiency.</p>
+<p>The predominance of GC-ending preferred codons — particularly CTG for Leucine (RSCU = 2.18) and GTG for Valine (RSCU = 1.76) — reflects both compositional bias and translational selection, as these codons are recognized by abundant tRNAs in human cells (dos Reis et al., 2004).</p>
+<p>The ENC-GC3s plot analysis revealed that 84% of cancer genes fall below the expected curve, a stronger signal than previously reported. This indicates that translational selection operates in addition to mutational pressure across all cancer gene categories, consistent with the functional importance of cancer genes and their high expression levels in relevant tissues.</p>
+<h3>5.3 Evolutionary Forces Acting on Cancer Genes</h3>
+<p>The neutrality plot regression slope of 0.200 indicates that natural selection (80.0%) is the dominant force shaping codon usage in cancer genes, substantially stronger than mutation pressure (20.0%). This finding is consistent with previous studies on human autophagy genes (slope = 0.213; Malik et al., 2022) and oral cancer genes (Chakraborty et al., 2019), and suggests even stronger selective constraint on cancer genes than previously reported.</p>
+<p>Interestingly, TSGs showed a slightly higher mutation pressure contribution (27.7%, slope = 0.277) compared to oncogenes (20.1%, slope = 0.201), while dual-role genes exhibited the strongest selective constraint (87.0%, slope = 0.130). The lower neutrality slope in dual-role genes may reflect their requirement to function in both oncogenic and tumor-suppressive contexts, imposing stringent constraints on codon usage that limit compositional drift.</p>
+<h3>5.4 CpG Content and Mutational Vulnerability</h3>
+<p>The CpG O/E ratios were uniformly low across all gene categories (oncogenes: 0.48, TSGs: 0.44, dual-role: 0.39), confirming pervasive CpG depletion in cancer gene coding regions. However, the range was wide (0.18–0.93), revealing substantial gene-level variation with important implications:</p>
+<ol>
+<li><strong>Universal CpG depletion:</strong> The mean CpG O/E of 0.44 across all 50 genes is well below 1.0, indicating that methylation-mediated deamination has reduced CpG content substantially, consistent with the general mammalian pattern. Notably, even genes with the highest CpG retention (VHL: 0.93, CDKN2A: 0.90) are still below 1.0.</li>
+</ol>
+<ol>
+<li><strong>Gene length–CpG relationship:</strong> Genes with the strongest CpG depletion (BRCA1: 0.18, BRCA2: 0.23, TET2: 0.20) are among the longest in the dataset, while genes with higher CpG retention tend to be shorter and GC-rich. This is consistent with the strong positive correlation between GC% and CpG O/E (r = 0.804, p = 2.00 × 10⁻¹²).</li>
+</ol>
+<ol>
+<li><strong>Mutational hotspots:</strong> Despite overall depletion, the residual CpG sites in cancer genes remain mutational hotspots. The BRAF V600E mutation, one of the most common oncogenic mutations, occurs at a C→T transition in a CpG context, illustrating how even depleted CpG sites contribute to cancer-driving mutations.</li>
+</ol>
+<h3>5.5 Implications for Cancer Biology</h3>
+<p>The compositional differences between oncogenes and TSGs revealed in this study have several translational implications:</p>
+<p><strong>Diagnostic panel design:</strong> Understanding the GC content profiles of cancer genes can inform the design of targeted sequencing panels, as GC-rich regions require specialized library preparation and sequencing strategies to achieve uniform coverage.</p>
+<p><strong>Gene therapy:</strong> Codon optimization strategies for cancer gene therapy (e.g., expressing wild-type TP53 in tumor cells) should account for the natural codon usage preferences of the target gene category.</p>
+<p><strong>Biomarker development:</strong> The CpG content analysis provides information relevant to methylation-based biomarker development, as CpG-rich coding regions may serve as informative methylation targets.</p>
+<p><strong>Mutational signature analysis:</strong> The nucleotide composition and CpG content of cancer genes influence the expected mutational spectrum, which is relevant for distinguishing driver mutations from passenger mutations.</p>
+<h3>5.6 Comparison with Previous Studies</h3>
+<p>Our findings are broadly consistent with previous investigations:</p>
+<table>
+<tr><th>Study</th><th>Focus</th><th>Key Finding</th><th>Our Comparison</th></tr>
+<tr><td>Prabha et al. (2017)</td><td>Cancer gene codon usage</td><td>GC3 bias in cancer genes</td><td>Confirmed — cancer genes show elevated GC3 (mean 54.7%)</td></tr>
+<tr><td>Malik et al. (2022)</td><td>Autophagy genes</td><td>Mean GC=52.23%, selection dominant (slope=0.213)</td><td>Similar GC range (49.9%), even stronger selection (slope=0.200)</td></tr>
+<tr><td>Chakraborty et al. (2019)</td><td>Oral cancer genes</td><td>ENC range 34.6-55.9</td><td>Our range 33.4-58.1, highly consistent</td></tr>
+<tr><td>Supek et al. (2014)</td><td>Tumor codon usage</td><td>tRNA-codon co-adaptation in cancer</td><td>Supports our finding of 84% genes below ENC curve</td></tr>
+<tr><td>D'Onofrio et al. (1999)</td><td>Gene GC content</td><td>GC varies with isochore location</td><td>Confirmed — wide GC range (35.7-72.0%) reflects isochore variation</td></tr>
+</table>
+<h3>5.7 Limitations</h3>
+<ol>
+<li><strong>Sample size and statistical power:</strong> With 20 genes per category, statistical power to detect moderate effect sizes is limited. The trends observed (e.g., GC3: 59.97% vs. 50.61%, p = 0.086) may achieve significance with a larger gene panel from COSMIC CGC Tier 2 or whole-genome cancer driver gene lists.</li>
+<li><strong>Gene selection bias:</strong> Analysis was restricted to 50 well-characterized COSMIC Tier 1 cancer genes; inclusion of more recently identified cancer genes from large-scale sequencing studies might reveal additional patterns.</li>
+<li><strong>Single isoform analysis:</strong> Only the canonical RefSeq transcript isoform was analyzed for each gene; alternative splicing may produce transcripts with different compositional properties.</li>
+<li><strong>Static analysis:</strong> This study analyzes the reference genome sequence; somatic mutations in cancer may alter the local GC content and codon usage of individual genes.</li>
+<li><strong>Functional context:</strong> The analysis treats all coding sequence equally; domain-specific compositional variation may be functionally relevant but was not systematically examined.</li>
+<li><strong>Cancer type specificity:</strong> The gene classification (oncogene vs. TSG) is simplified; some genes (dual-role) function differently across cancer types, and genes like NOTCH1 can act as oncogenes in some contexts and tumor suppressors in others.</li>
+</ol>
+<hr>
+<h2>6. Conclusions</h2>
+<p>This comprehensive computational analysis of GC content variability and nucleotide composition in 50 human cancer-associated genes reveals:</p>
+<ol>
+<li><strong>Compositional trends by gene category:</strong> Oncogenes show a trend toward higher GC content (51.84%) compared to tumor suppressor genes (48.81%), with the divergence most pronounced at the third codon position (GC3: 59.97% vs. 50.61%, p = 0.086). While not reaching conventional statistical significance at n=20 per group, these trends are biologically consistent with isochore localization patterns.</li>
+</ol>
+<ol>
+<li><strong>Biased codon usage:</strong> Cancer genes preferentially use specific GC-ending codons, with CTG (Leu, RSCU = 2.18) and GTG (Val, RSCU = 1.76) as the most overrepresented. Eight codons were strongly avoided (RSCU < 0.6), including four CG-ending codons (GCG, TCG, CCG, ACG), reflecting CpG dinucleotide avoidance.</li>
+</ol>
+<ol>
+<li><strong>Strong selection-dominated evolution:</strong> Natural selection contributes approximately 80.0% of codon usage variation (neutrality slope = 0.200, p = 3.29 × 10⁻⁸), with mutation pressure contributing only 20.0%. This represents one of the strongest selection signals reported for human gene subsets.</li>
+</ol>
+<ol>
+<li><strong>Pervasive CpG depletion:</strong> All 50 cancer genes show CpG O/E ratios below 1.0 (mean 0.44 ± 0.18), confirming widespread methylation-mediated CpG loss. CpG retention correlates strongly with overall GC content (r = 0.804).</li>
+</ol>
+<ol>
+<li><strong>Widespread translational selection:</strong> 84% of cancer genes fall below the expected ENC-GC3s curve, indicating that translational selection acts broadly across cancer genes regardless of oncogene/TSG classification.</li>
+</ol>
+<ol>
+<li><strong>Asymmetric mutational pressures:</strong> PR2 analysis reveals that 92% of genes deviate from Chargaff's second parity rule at the third codon position, with biases toward T3 (over A3) and G3 (over C3), indicating transcription-coupled mutational asymmetry.</li>
+</ol>
+<p>These findings provide a foundational understanding of the compositional landscape of cancer genes and contribute to the broader fields of cancer genomics, molecular evolution, and computational biology. The strong selection signal (80%) and widespread translational selection (84% below ENC curve) highlight that cancer genes, as a class, are under stringent evolutionary constraint. Future studies should extend this analysis to include larger gene panels, tissue-specific expression data, somatic mutation profiles, and epigenomic information to create integrated models of cancer gene regulation.</p>
+<hr>
+<h2>7. Future Directions</h2>
+<ol>
+<li><strong>Integrate with expression data:</strong> Correlate compositional features with RNA-seq expression data across The Cancer Genome Atlas (TCGA) cancer types</li>
+<li><strong>Somatic mutation mapping:</strong> Overlay somatic mutation locations from COSMIC onto GC content sliding window profiles to identify compositionally vulnerable regions</li>
+<li><strong>Epigenomic integration:</strong> Combine CpG O/E data with genome-wide methylation data (ENCODE, Roadmap Epigenomics) to assess methylation status of CpG-rich coding regions</li>
+<li><strong>Machine learning classification:</strong> Develop predictive models that use compositional features to classify cancer driver genes</li>
+<li><strong>Pan-cancer analysis:</strong> Extend the analysis to all ~700+ COSMIC CGC genes across both tiers</li>
+<li><strong>Comparative genomics:</strong> Compare human cancer gene composition with orthologous genes in cancer-resistant species (e.g., naked mole-rat, elephant)</li>
+<li><strong>3D genome context:</strong> Examine the relationship between cancer gene GC content and chromatin organization (TADs, compartments)</li>
+</ol>
+<hr>
+<h2>8. References</h2>
+<ol>
+<li>Alexandrov, L.B., Nik-Zainal, S., Wedge, D.C., et al. (2013). Signatures of mutational processes in human cancer. <em>Nature</em>, 500(7463), 415-421.</li>
+</ol>
+<ol>
+<li>Baylin, S.B. & Jones, P.A. (2016). Epigenetic determinants of cancer. <em>Cold Spring Harbor Perspectives in Biology</em>, 8(9), a019505.</li>
+</ol>
+<ol>
+<li>Bernardi, G. (2000). Isochores and the evolutionary genomics of vertebrates. <em>Gene</em>, 241(1), 3-17.</li>
+</ol>
+<ol>
+<li>Buhr, F., Jha, S., Thommen, M., et al. (2016). Synonymous codons direct cotranslational folding toward different protein conformations. <em>Molecular Cell</em>, 61(3), 341-351.</li>
+</ol>
+<ol>
+<li>Chakraborty, S., Nag, D., Mazumder, T.H., et al. (2019). Understanding the nucleotide composition and codon usage patterns of genes expressed in human oral cancer. <em>Journal of Oral Biosciences</em>, 62(1), 15-22.</li>
+</ol>
+<ol>
+<li>Cock, P.J., Antao, T., Chang, J.T., et al. (2009). Biopython: freely available Python tools for computational molecular biology and bioinformatics. <em>Bioinformatics</em>, 25(11), 1422-1423.</li>
+</ol>
+<ol>
+<li>Costantini, M., Clay, O., Auletta, F., & Bernardi, G. (2006). An isochore map of human chromosomes. <em>Genome Research</em>, 16(4), 536-541.</li>
+</ol>
+<ol>
+<li>D'Onofrio, G., Jabbari, K., Musto, H., & Bernardi, G. (1999). The correlation of protein hydropathy with the base composition of coding sequences. <em>Gene</em>, 238(1), 3-14.</li>
+</ol>
+<ol>
+<li>dos Reis, M., Savva, R., & Wernisch, L. (2004). Solving the riddle of codon usage preferences: a test for translational selection. <em>Nucleic Acids Research</em>, 32(17), 5036-5044.</li>
+</ol>
+<ol>
+<li>Gardiner-Garden, M. & Frommer, M. (1987). CpG islands in vertebrate genomes. <em>Journal of Molecular Biology</em>, 196(2), 261-282.</li>
+</ol>
+<ol>
+<li>Goodarzi, H., Nguyen, H.C.B., Zhang, S., et al. (2016). Modulated expression of specific tRNAs drives gene expression and cancer progression. <em>Cell</em>, 165(6), 1416-1427.</li>
+</ol>
+<ol>
+<li>Hershberg, R. & Petrov, D.A. (2008). Selection on codon bias. <em>Annual Review of Genetics</em>, 42, 287-299.</li>
+</ol>
+<ol>
+<li>Kudla, G., Murray, A.W., Tollervey, D., & Plotkin, J.B. (2006). Coding-sequence determinants of gene expression in <em>Escherichia coli</em>. <em>Science</em>, 324(5924), 255-258.</li>
+</ol>
+<ol>
+<li>Kumar, S., Stecher, G., Li, M., Knyaz, C., & Tamura, K. (2018). MEGA X: Molecular Evolutionary Genetics Analysis across computing platforms. <em>Molecular Biology and Evolution</em>, 35(6), 1547-1549.</li>
+</ol>
+<ol>
+<li>Lawrence, M.S., Stojanov, P., Polak, P., et al. (2013). Mutational heterogeneity in cancer and the search for new cancer-associated genes. <em>Nature</em>, 499(7457), 214-218.</li>
+</ol>
+<ol>
+<li>Malik, A., Firoz, A., Jha, V., et al. (2022). Analysis of the compositional features and codon usage pattern of genes involved in human autophagy. <em>Frontiers in Genetics</em>, 13, 1019258.</li>
+</ol>
+<ol>
+<li>Mauger, D.M., Cabral, B.J., Presnyak, V., et al. (2019). mRNA structure regulates protein expression through changes in functional half-life. <em>Proceedings of the National Academy of Sciences</em>, 116(48), 24075-24083.</li>
+</ol>
+<ol>
+<li>Novembre, J.A. (2002). Accounting for background nucleotide composition when measuring codon usage bias. <em>Molecular Biology and Evolution</em>, 19(8), 1390-1394.</li>
+</ol>
+<ol>
+<li>Peden, J.F. (1999). Analysis of codon usage. PhD Thesis, University of Nottingham.</li>
+</ol>
+<ol>
+<li>Piovesan, A., Pelleri, M.C., Antonaros, F., et al. (2019). On the length, weight and GC content of the human genome. <em>BMC Research Notes</em>, 12, 106.</li>
+</ol>
+<ol>
+<li>Plotkin, J.B. & Kudla, G. (2011). Synonymous but not the same: the causes and consequences of codon bias. <em>Nature Reviews Genetics</em>, 12(1), 32-42.</li>
+</ol>
+<ol>
+<li>Puigbò, P., Bravo, I.G., & Garcia-Vallve, S. (2008). CAIcal: a combined set of tools to assess codon usage adaptation. <em>Biology Direct</em>, 3, 38.</li>
+</ol>
+<ol>
+<li>Rice, P., Longden, I., & Bleasby, A. (2000). EMBOSS: the European Molecular Biology Open Software Suite. <em>Trends in Genetics</em>, 16(6), 276-277.</li>
+</ol>
+<ol>
+<li>Sharp, P.M. & Li, W.H. (1987). The codon adaptation index—a measure of directional synonymous codon usage bias, and its potential applications. <em>Nucleic Acids Research</em>, 15(3), 1281-1295.</li>
+</ol>
+<ol>
+<li>Sharp, P.M., Emery, L.R., & Zeng, K. (2010). Forces that influence the evolution of codon bias. <em>Philosophical Transactions of the Royal Society B</em>, 365(1544), 1203-1212.</li>
+</ol>
+<ol>
+<li>Sondka, Z., Bamford, S., Cole, C.G., et al. (2018). The COSMIC Cancer Gene Census: describing genetic dysfunction across all human cancers. <em>Nature Reviews Cancer</em>, 18(11), 696-705.</li>
+</ol>
+<ol>
+<li>Sung, H., Ferlay, J., Siegel, R.L., et al. (2021). Global cancer statistics 2020: GLOBOCAN estimates of incidence and mortality worldwide for 36 cancers in 185 countries. <em>CA: A Cancer Journal for Clinicians</em>, 71(3), 209-249.</li>
+</ol>
+<ol>
+<li>Supek, F., Miñana, B., Valcárcel, J., Gabaldón, T., & Lehner, B. (2014). Synonymous mutations frequently act as driver mutations in human cancers. <em>Cell</em>, 156(6), 1324-1335.</li>
+</ol>
+<ol>
+<li>Vogelstein, B., Papadopoulos, N., Velculescu, V.E., et al. (2013). Cancer genome landscapes. <em>Science</em>, 339(6127), 1546-1558.</li>
+</ol>
+<ol>
+<li>Wright, F. (1990). The 'effective number of codons' used in a gene. <em>Gene</em>, 87(1), 23-29.</li>
+</ol>
+<hr>
+<h2>Appendices</h2>
+<p>See supplementary materials for:</p>
+<ul>
+<li><strong>Appendix A:</strong> Complete gene list with NCBI accession numbers</li>
+<li><strong>Appendix B:</strong> Full RSCU tables for all 50 genes</li>
+<li><strong>Appendix C:</strong> Individual gene GC content sliding window plots</li>
+<li><strong>Appendix D:</strong> Python scripts used for analysis</li>
+<li><strong>Appendix E:</strong> Raw data tables</li>
+</ul>
+</body></html>
