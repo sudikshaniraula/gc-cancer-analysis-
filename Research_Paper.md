@@ -3,7 +3,7 @@
 ---
 
 **Author:** Sudiksha Niraula
-Self Directed undergraduate research
+**Self Directed Undergraduate Research
 **Date:** March 2026
 **Duration of Study:** April 2025 – March 2026
 
