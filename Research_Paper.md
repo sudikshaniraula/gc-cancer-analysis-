@@ -2,9 +2,8 @@
 
 ---
 
-**Author:** Sudiksha [Last Name]
-**Affiliation:** Department of Bioinformatics / Biotechnology, [University Name]
-**Supervisor:** [Supervisor Name], [Designation]
+**Author:** Sudiksha Niraula
+Self Directed undergraduate research
 **Date:** March 2026
 **Duration of Study:** April 2025 – March 2026
 
